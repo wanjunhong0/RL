@@ -47,6 +47,8 @@ class Policy(nn.Module):
 
 policy = Policy()
 optimizer = optim.Adam(policy.parameters(), lr=1e-2)
+# The smallest representable positive number such that 1.0 + eps != 1.0.
+# Type of eps is an appropriate floating point type.
 eps = np.finfo(np.float32).eps.item()
 
 
@@ -70,6 +72,8 @@ def finish_episode():
     returns = (returns - returns.mean()) / (returns.std() + eps)
     for log_prob, R in zip(policy.saved_log_probs, returns):
         policy_loss.append(-log_prob * R)
+        # negative because of gradient ascent
+        # This should increase the likelihood of actions that got our agent a larger reward.
     optimizer.zero_grad()
     policy_loss = torch.cat(policy_loss).sum()
     policy_loss.backward()
